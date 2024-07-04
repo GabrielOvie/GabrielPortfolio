@@ -12,7 +12,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 
 | My Core Skills                                         | Associated Project         |
 |-----------------------------------------------|----------------------------|
-|Network Infrastructure: Setting up and maintaining local area networks (LANs) or wide area networks (WANs); Configuring network devices such as routers and switches; Implementing and managing VPNs         | <a href="https://https://github.com/GabrielOvie/Network-Infrastructure-Project/tree/main">Network Infrastructure Setup and Management</a>|
+|Network Infrastructure: Setting up and maintaining local area networks (LANs) or wide area networks (WANs); Configuring network devices such as routers and switches; Implementing and managing VPNs         | <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>|
 |Network Traffic Monitoring and Attack Detection | <a href="https://google.com">Detection Lab</a>|
 |System Administration: Administering Active Directory,  Implementing and maintaining group policies        | SOC Automation Lab|
 |Virtualization: Working with virtualization technologies like VMware or Hyper-V; Managing virtual machines and resources    | SOC Automation Lab|
@@ -59,7 +59,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 </div>
 
 ## Projects
-- <a href="https://https://github.com/GabrielOvie/Network-Infrastructure-Project/tree/main">Network Infrastructure Setup and Management</a>
+- <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>
 - Network Traffic Monitoring and Attack Detection
 - System Administration: Administering Active Directory,  Implementing and maintaining group policies
 - Mobile Device Management: Implementing and managing MDM solutions
