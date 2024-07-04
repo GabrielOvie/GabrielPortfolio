@@ -13,8 +13,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 | My Core Skills                                         | Associated Project         |
 |-----------------------------------------------|----------------------------|
 |Network Infrastructure: Setting up and maintaining local area networks (LANs) or wide area networks (WANs); Configuring network devices such as routers and switches; Implementing and managing VPNs         | <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>|
-|Network Traffic Monitoring and Attack Detection | <a href="https://google.com">Detection Lab</a>|
-|System Administration: Administering Active Directory,  Implementing and maintaining group policies        | SOC Automation Lab|
+|Enterprise Active Directory Implementation and Management       | Enterprise Active Directory Implementation and Management|
 |Virtualization: Working with virtualization technologies like VMware or Hyper-V; Managing virtual machines and resources    | SOC Automation Lab|
 |Security: Implementing and maintaining firewalls; Setting up antivirus and anti-malware solutions; Conducting security audits or vulnerability assessments                  | SOC Automation Lab|
 |Troubleshooting: Resolving complex software and hardware issues; Diagnosing and fixing network connectivity problems | SOC Automation Lab|
@@ -61,7 +60,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 ## Projects
 - <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>
 - Network Traffic Monitoring and Attack Detection
-- System Administration: Administering Active Directory,  Implementing and maintaining group policies
+- Enterprise Active Directory Implementation and Management
 - Mobile Device Management: Implementing and managing MDM solutions
 - Setting up and maintaining local area networks (LANs) or wide area networks (WANs)
 - Troubleshooting: Resolving complex software and hardware issues
