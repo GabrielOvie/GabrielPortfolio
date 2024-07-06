@@ -63,4 +63,4 @@ I aim to bridge the gap between cutting-edge technology and practical business n
 - <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>
 - <a href=https://github.com/GabrielOvie/Mobile-Device-Management-MDM-Implementation/tree/main> Mobile Device Management: Implementing and managing MDM solutions </a>
 - Troubleshooting: Resolving complex software and hardware issues
--Implementing ADFS for Seamless Single Sign-On Across Enterprise Applications | <a href=https://github.com/GabrielOvie/ADFS-for-Single-Sign-On-Across-Enterprise-Applications/tree/main> Implementing ADFS for Seamless Single Sign-On Across Enterprise Applications</a
+- <a href=https://github.com/GabrielOvie/ADFS-for-Single-Sign-On-Across-Enterprise-Applications/tree/main> Implementing ADFS for Seamless Single Sign-On Across Enterprise Applications</a>
