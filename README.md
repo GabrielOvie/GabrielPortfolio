@@ -17,7 +17,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 |Enterprise Network Security Enhancement and Audit    | <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>|
 |Security: Implementing and maintaining firewalls; Setting up antivirus and anti-malware solutions; Conducting security audits or vulnerability assessments                  | SOC Automation Lab|
 |Troubleshooting: Resolving complex software and hardware issues; Diagnosing and fixing network connectivity problems | SOC Automation Lab|
-|Mobile Device Management: Implementing and managing MDM solutions;  Supporting a range of mobile devices and operating systems | SOC Automation Lab|
+|Mobile Device Management | <a href=https://github.com/GabrielOvie/Mobile-Device-Management-MDM-Implementation/tree/main> Mobile Device Management: Implementing and managing MDM solutions </a>|
 
 
 ## Tools
@@ -61,6 +61,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 - <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>
 - <a href=https://github.com/GabrielOvie/Enterprise-Active-Directory-Implementation-and-Management>Enterprise-Active-Directory-Implementation-and-Management</a>
 - <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>
-- Mobile Device Management: Implementing and managing MDM solutions
+- <a href=https://github.com/GabrielOvie/Mobile-Device-Management-MDM-Implementation/tree/main> Mobile Device Management: Implementing and managing MDM solutions </a>
+- 
 - Troubleshooting: Resolving complex software and hardware issues
 -Enterprise Network Security Enhancement and Audit
