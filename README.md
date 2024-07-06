@@ -16,7 +16,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 |Enterprise Active Directory Implementation and Management       | <a href=https://github.com/GabrielOvie/Enterprise-Active-Directory-Implementation-and-Management>Enterprise-Active-Directory-Implementation-and-Management</a>|
 |Enterprise Network Security Enhancement and Audit    | <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>|
 |Security: Implementing and maintaining firewalls; Setting up antivirus and anti-malware solutions; Conducting security audits or vulnerability assessments                  | SOC Automation Lab|
-|Troubleshooting: Resolving complex software and hardware issues; Diagnosing and fixing network connectivity problems | SOC Automation Lab|
+|Implementing ADFS for Seamless Single Sign-On Across Enterprise Applications | SOC Automation Lab|
 |Mobile Device Management | <a href=https://github.com/GabrielOvie/Mobile-Device-Management-MDM-Implementation/tree/main> Mobile Device Management: Implementing and managing MDM solutions </a>|
 
 
@@ -62,6 +62,6 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 - <a href=https://github.com/GabrielOvie/Enterprise-Active-Directory-Implementation-and-Management>Enterprise-Active-Directory-Implementation-and-Management</a>
 - <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>
 - <a href=https://github.com/GabrielOvie/Mobile-Device-Management-MDM-Implementation/tree/main> Mobile Device Management: Implementing and managing MDM solutions </a>
-- 
+- Implementing ADFS for Seamless Single Sign-On Across Enterprise Applications
 - Troubleshooting: Resolving complex software and hardware issues
 -Enterprise Network Security Enhancement and Audit
