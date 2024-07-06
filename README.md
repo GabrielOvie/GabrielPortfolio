@@ -14,7 +14,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 |-----------------------------------------------|----------------------------|
 |Network Infrastructure: Setting up and maintaining local area networks (LANs) or wide area networks (WANs); Configuring network devices such as routers and switches; Implementing and managing VPNs         | <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>|
 |Enterprise Active Directory Implementation and Management       | <a href=https://github.com/GabrielOvie/Enterprise-Active-Directory-Implementation-and-Management>Enterprise-Active-Directory-Implementation-and-Management</a>|
-|Enterprise Network Security Enhancement and Audit    | SOC Automation Lab|
+|Enterprise Network Security Enhancement and Audit    | <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>|
 |Security: Implementing and maintaining firewalls; Setting up antivirus and anti-malware solutions; Conducting security audits or vulnerability assessments                  | SOC Automation Lab|
 |Troubleshooting: Resolving complex software and hardware issues; Diagnosing and fixing network connectivity problems | SOC Automation Lab|
 |Mobile Device Management: Implementing and managing MDM solutions;  Supporting a range of mobile devices and operating systems | SOC Automation Lab|
@@ -60,6 +60,7 @@ Dedicated IT professional seeking to elevate organizational cybersecurity and op
 ## Projects
 - <a href=https://github.com/GabrielOvie/Network-Infrastructure-Project>Network Infrastructure Setup and Management</a>
 - <a href=https://github.com/GabrielOvie/Enterprise-Active-Directory-Implementation-and-Management>Enterprise-Active-Directory-Implementation-and-Management</a>
+- <a href=https://github.com/GabrielOvie/Enterprise-Network-Security-Enhancement-and-Audit>Enterprise-Network-Security-Enhancement and Audit</a>
 - Mobile Device Management: Implementing and managing MDM solutions
 - Troubleshooting: Resolving complex software and hardware issues
 -Enterprise Network Security Enhancement and Audit
