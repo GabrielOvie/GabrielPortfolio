@@ -1,0 +1,46 @@
+# InfraForge Lab Template: docker-compose-debug
+# Category: Containers | Difficulty: Beginner
+# Execution: Container (Docker-in-Docker with broken compose app)
+
+id: docker-compose-debug
+title: "Docker Compose Service Dependency Failure"
+category: containers
+difficulty: beginner
+estimated_minutes: 20
+max_runtime_minutes: 60
+time_par_minutes: 20
+is_free: true
+
+image: infraforge/lab-docker-compose-debug:v1
+
+weight_correctness: 0.60
+weight_safety: 0.25
+weight_efficiency: 0.15
+
+scenario: |
+  ## Situation
+
+  A three-tier app (API + Redis + PostgreSQL) is failing to start on the
+  deployment server. The developer committed a `docker-compose.yml` and
+  pushed to main, but the CI is green and nobody can figure out why the
+  app won't come up on the server.
+
+  ## Your goal
+
+  1. Identify why the `api` container is failing
+  2. Fix the `docker-compose.yml` — minimal change only
+  3. Verify all three services are healthy
+  4. Confirm the API returns HTTP 200 on `GET /`
+
+  ## Environment
+
+  You have SSH access to the server.
+  Docker and docker compose are installed.
+  The broken compose file is at `/home/user/app/docker-compose.yml`.
+
+  ## Rules
+
+  - Fix only what is broken — do not restructure the compose file
+  - Do not upgrade image versions
+  - Do not change port mappings
+  - All services must use the images defined in the original file

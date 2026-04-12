@@ -1,0 +1,50 @@
+# InfraForge Lab Template: linux-service-outage
+# Category: Linux | Difficulty: Intermediate
+# Execution: Container (Ubuntu 22.04 + systemd-in-docker)
+
+id: linux-service-outage
+title: "Linux Service Outage Triage"
+category: linux
+difficulty: intermediate
+estimated_minutes: 25
+max_runtime_minutes: 90
+time_par_minutes: 25
+is_free: true
+
+image: infraforge/lab-linux-service-outage:v1
+# Built from templates/linux-service-outage/Dockerfile
+
+weight_correctness: 0.60
+weight_safety: 0.25
+weight_efficiency: 0.15
+
+scenario: |
+  ## Situation
+
+  Production is down. A junior engineer deployed a config change to the
+  `webapp` service 15 minutes ago and it immediately went silent.
+
+  You have been handed SSH access to the server. The on-call dashboard shows:
+
+  - `webapp.service` — FAILED
+  - `/var/log` disk usage: 97%
+  - No recent alerts from the health check endpoint
+
+  ## Your goal
+
+  1. Identify the root cause of the `webapp.service` failure
+  2. Restore the service to a running state
+  3. Free disk space safely — preserve all application logs
+  4. Confirm the health endpoint returns HTTP 200
+
+  ## Access
+
+  SSH into the environment using the credentials provided.
+  You have `sudo` access.
+
+  ## Rules
+
+  - Do not modify files outside `/etc/webapp/`, `/var/log/`, `/tmp/`
+  - Do not restart unrelated services
+  - Do not disable the firewall
+  - All logs must be preserved (no `rm` on log files — rotate or compress)

@@ -1,0 +1,53 @@
+# InfraForge Lab Template: aws-iam-repair
+# Category: Cloud (AWS) | Difficulty: Intermediate
+# Execution: Container (LocalStack-based AWS sandbox)
+
+id: aws-iam-repair
+title: "AWS IAM Least-Privilege Repair"
+category: cloud_aws
+difficulty: intermediate
+estimated_minutes: 30
+max_runtime_minutes: 90
+time_par_minutes: 30
+
+image: infraforge/lab-aws-iam-repair:v1
+# Runs LocalStack + broken IAM role + test scripts
+
+weight_correctness: 0.60
+weight_safety: 0.25
+weight_efficiency: 0.15
+
+scenario: |
+  ## Situation
+
+  A developer created an IAM role (`app-backend-role`) for a backend service
+  that needs to:
+  - Read objects from S3 bucket `app-data-bucket`
+  - Publish messages to SNS topic `app-notifications`
+
+  The role policy was committed incorrectly. The application is getting
+  `AccessDenied` on both S3 and SNS operations.
+
+  After investigating, someone "fixed" it by adding `"Action": "*"` — which
+  now passes the app tests but violates the company's least-privilege policy.
+  Your job is to repair it properly.
+
+  ## Your goal
+
+  1. Identify the broken policy attached to `app-backend-role`
+  2. Remove the wildcard permission
+  3. Grant only the minimum permissions required:
+     - `s3:GetObject` on `arn:aws:s3:::app-data-bucket/*`
+     - `sns:Publish` on the `app-notifications` topic ARN
+  4. Verify both actions succeed and nothing else is permitted
+
+  ## Environment
+
+  AWS CLI is configured and pointing to the LocalStack sandbox (no real AWS).
+  The test script at `/home/user/verify.sh` runs the permission checks.
+
+  ## Rules
+
+  - The role must not have `"Action": "*"` or `"Resource": "*"` in any statement
+  - No additional policies may be attached to the role
+  - The existing trust policy must not be modified

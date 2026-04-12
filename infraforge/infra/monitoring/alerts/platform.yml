@@ -1,0 +1,89 @@
+groups:
+  - name: platform
+    rules:
+      # ── API availability ──────────────────────────────────────────────────────
+      - alert: APIDown
+        expr: up{job="platform-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Platform API is down"
+          description: "The platform API has been unreachable for 1 minute."
+
+      - alert: APIHighErrorRate
+        expr: |
+          rate(http_requests_total{job="platform-api",status=~"5.."}[5m])
+          / rate(http_requests_total{job="platform-api"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on platform API (>5%)"
+
+      - alert: APIHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{job="platform-api"}[5m])
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "95th percentile API latency >2s"
+
+  - name: lab-runtime
+    rules:
+      # ── Orchestrator ─────────────────────────────────────────────────────────
+      - alert: OrchestratorDown
+        expr: up{job="lab-orchestrator"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Lab orchestrator is down — no new labs can launch"
+
+      - alert: TooManyStaleRuns
+        expr: |
+          count(infraforge_runs_active_total) > 40
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 40 concurrent lab runs — approaching capacity"
+
+  - name: data
+    rules:
+      # ── PostgreSQL ────────────────────────────────────────────────────────────
+      - alert: PostgresDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+
+      - alert: PostgresHighConnections
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connection count exceeds 80"
+
+      # ── Redis ────────────────────────────────────────────────────────────────
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down — queues and caching unavailable"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage >90%"
