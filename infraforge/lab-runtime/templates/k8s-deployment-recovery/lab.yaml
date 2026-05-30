@@ -1,0 +1,52 @@
+# InfraForge Lab Template: k8s-deployment-recovery
+# Category: Kubernetes | Difficulty: Advanced
+# Execution: Container (k3s single-node cluster with broken resources)
+
+id: k8s-deployment-recovery
+title: "Kubernetes Deployment Recovery"
+category: kubernetes
+difficulty: advanced
+estimated_minutes: 35
+max_runtime_minutes: 90
+time_par_minutes: 35
+
+image: infraforge/lab-k8s-recovery:v1
+# Single-node k3s cluster pre-broken at startup
+
+weight_correctness: 0.60
+weight_safety: 0.25
+weight_efficiency: 0.15
+
+scenario: |
+  ## Situation
+
+  The `payments` microservice deployment in the `production` namespace is broken.
+  The SRE who set it up is on leave. The symptoms:
+
+  - All pods are in `CrashLoopBackOff`
+  - The `payments-svc` Service is unreachable on port 8080
+  - The readiness probe is failing (the endpoint returns 404)
+  - A ConfigMap secret mount is wrong — the app can't read its config
+
+  Staging is fine. You have `kubectl` access to the cluster.
+
+  ## Your goal
+
+  1. Diagnose the failing deployment
+  2. Fix all broken resources — Deployment, Service, ConfigMap
+  3. All pods must be `Running` with `1/1 Ready`
+  4. Service must be reachable on port 8080 and return HTTP 200
+
+  ## Broken things (find them yourself)
+
+  - The readiness probe path is wrong
+  - The ConfigMap key name doesn't match what the app expects
+  - The Service selector doesn't match the pod labels
+  - The container resource limits are set impossibly low (OOMKill loop)
+
+  ## Rules
+
+  - Work in the `production` namespace only
+  - Do not delete and recreate the cluster
+  - Do not change the container image or image tag
+  - Fix only what is broken — leave other resources untouched

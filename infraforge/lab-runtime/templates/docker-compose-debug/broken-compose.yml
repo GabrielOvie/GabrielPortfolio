@@ -1,0 +1,38 @@
+# This is the BROKEN docker-compose.yml placed at /home/user/app/docker-compose.yml
+# Bugs (intentional — not all visible at first glance):
+#   1. api.environment: DATABASE_URL references wrong service name "postgres" (service is named "db")
+#   2. api.depends_on: missing "db" dependency (starts before postgres is ready)
+#   3. api.networks: references "backend" but network is named "app-net"
+
+version: "3.9"
+
+networks:
+  app-net:
+    driver: bridge
+
+services:
+  api:
+    image: infraforge/sample-api:latest
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://user:pass@postgres:5432/appdb"   # BUG: should be "db"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      - redis                                                         # BUG: missing "db"
+    networks:
+      - backend                                                       # BUG: wrong network name
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - app-net
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: appdb
+    networks:
+      - app-net

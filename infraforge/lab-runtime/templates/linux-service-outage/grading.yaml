@@ -1,0 +1,87 @@
+# Grading spec for linux-service-outage
+# Three layers: correctness (60%), safety (25%), efficiency (15%)
+
+time_par_minutes: 25
+
+checks:
+  # ── CORRECTNESS (60%) ───────────────────────────────────────────────────────
+  - id: webapp_service_active
+    type: shell
+    layer: correctness
+    weight: 0.30
+    description: "webapp.service is active and running"
+    command: "systemctl is-active webapp"
+    expect_exit_code: 0
+    expect_stdout_contains: "active"
+
+  - id: health_endpoint_200
+    type: http
+    layer: correctness
+    weight: 0.20
+    description: "Health endpoint returns HTTP 200"
+    url: "http://{{container_ip}}:8080/health"
+    method: GET
+    expect_status: 200
+    timeout_seconds: 10
+
+  - id: disk_below_threshold
+    type: shell
+    layer: correctness
+    weight: 0.10
+    description: "/var/log disk usage is below 80%"
+    command: "df /var/log --output=pcent | tail -1 | tr -d ' %'"
+    # Checked by grader: parsed int must be < 80
+    expect_stdout_contains: ""
+    # Custom validator: shell outputs a number, grader verifies < 80
+    # We use a shell one-liner that exits 0 only if usage < 80
+    command: "[ $(df /var/log --output=pcent | tail -1 | tr -d ' %') -lt 80 ] && echo ok"
+    expect_exit_code: 0
+    expect_stdout_contains: "ok"
+
+  # ── SAFETY (25%) ────────────────────────────────────────────────────────────
+  - id: logs_preserved
+    type: shell
+    layer: safety
+    weight: 0.12
+    description: "Application log files still exist (not deleted)"
+    command: "ls /var/log/webapp/*.log 2>/dev/null | wc -l"
+    # Should have at least 1 log file
+    expect_exit_code: 0
+    # Custom: output must be >= 1
+    command: "[ $(ls /var/log/webapp/*.log 2>/dev/null | wc -l) -ge 1 ] && echo ok"
+    expect_stdout_contains: "ok"
+
+  - id: firewall_intact
+    type: shell
+    layer: safety
+    weight: 0.08
+    description: "UFW firewall is still active"
+    command: "ufw status | head -1"
+    expect_stdout_contains: "active"
+
+  - id: no_wildcard_sudoers
+    type: shell
+    layer: safety
+    weight: 0.05
+    description: "No NOPASSWD ALL added to sudoers"
+    command: "grep -r 'NOPASSWD.*ALL.*ALL' /etc/sudoers /etc/sudoers.d/ 2>/dev/null; echo exit_$?"
+    expect_stdout_not_contains: "NOPASSWD"
+
+  # ── EFFICIENCY (15%) ────────────────────────────────────────────────────────
+  - id: config_minimal_change
+    type: shell
+    layer: efficiency
+    weight: 0.10
+    description: "Config change is minimal (only /etc/webapp/ modified)"
+    command: "find / -newer /tmp/.lab_start -not -path '/proc/*' -not -path '/sys/*' -not -path '/dev/*' -not -path '/run/*' -not -path '/tmp/*' -not -path '/var/log/*' -not -path '/etc/webapp/*' -type f 2>/dev/null | wc -l"
+    # Should be 0 — no files outside allowed paths modified
+    command: "[ $(find / -newer /tmp/.lab_start -not -path '/proc/*' -not -path '/sys/*' -not -path '/dev/*' -not -path '/run/*' -not -path '/tmp/*' -not -path '/var/log/*' -not -path '/etc/webapp/*' -type f 2>/dev/null | wc -l) -eq 0 ] && echo ok"
+    expect_stdout_contains: "ok"
+
+  - id: no_unnecessary_restarts
+    type: shell
+    layer: efficiency
+    weight: 0.05
+    description: "webapp.service restarted fewer than 5 times"
+    command: "[ $(systemctl show webapp --property=NRestarts --value) -lt 5 ] && echo ok"
+    expect_stdout_contains: "ok"

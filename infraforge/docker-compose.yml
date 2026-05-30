@@ -1,0 +1,317 @@
+# InfraForge v1 - Full local dev stack
+# Two planes: platform (product SaaS) + lab-runtime (isolated execution)
+# Run: docker compose up -d
+
+version: "3.9"
+
+networks:
+  platform-net:
+    driver: bridge
+  lab-runtime-net:
+    driver: bridge
+    internal: true  # lab-runtime has no direct internet egress
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  registry-data:
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EDGE LAYER
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: infraforge-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - platform-api
+      - platform-frontend
+    networks:
+      - platform-net
+    restart: unless-stopped
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PLATFORM APP LAYER
+# ─────────────────────────────────────────────────────────────────────────────
+  platform-frontend:
+    build:
+      context: ./platform/frontend
+      dockerfile: Dockerfile
+    container_name: infraforge-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://platform-api:8000
+      - NEXT_PUBLIC_WS_URL=ws://platform-api:8000
+    networks:
+      - platform-net
+    restart: unless-stopped
+
+  platform-api:
+    build:
+      context: ./platform/api
+      dockerfile: Dockerfile
+    container_name: infraforge-api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ORCHESTRATOR_URL=http://lab-orchestrator:9000
+      - S3_ENDPOINT_URL=http://minio:9000
+      - S3_BUCKET=infraforge-artifacts
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  platform-worker:
+    build:
+      context: ./platform/api
+      dockerfile: Dockerfile.worker
+    container_name: infraforge-worker
+    command: celery -A app.workers.celery_app worker --loglevel=info -Q default,scoring,notifications
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ORCHESTRATOR_URL=http://lab-orchestrator:9000
+      - S3_ENDPOINT_URL=http://minio:9000
+      - S3_BUCKET=infraforge-artifacts
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - platform-net
+      - lab-runtime-net
+    restart: unless-stopped
+
+  platform-scheduler:
+    build:
+      context: ./platform/api
+      dockerfile: Dockerfile.worker
+    container_name: infraforge-scheduler
+    command: celery -A app.workers.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - redis
+    networks:
+      - platform-net
+    restart: unless-stopped
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DATA PLANE
+# ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: infraforge-postgres
+    environment:
+      - POSTGRES_DB=infraforge
+      - POSTGRES_USER=infraforge
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U infraforge -d infraforge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: infraforge-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: infraforge-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    networks:
+      - platform-net
+    ports:
+      - "9001:9001"  # MinIO console (dev only)
+    restart: unless-stopped
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LAB RUNTIME PLANE
+# ─────────────────────────────────────────────────────────────────────────────
+  lab-orchestrator:
+    build:
+      context: ./lab-runtime/orchestrator
+      dockerfile: Dockerfile
+    container_name: infraforge-orchestrator
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - ORCHESTRATOR_API_KEY=${ORCHESTRATOR_API_KEY}
+      - LAB_NETWORK_CIDR=172.20.0.0/16
+      - MAX_CONCURRENT_RUNS=50
+      - DEFAULT_RUN_TIMEOUT_MINUTES=90
+      - GRADER_URL=http://lab-grader:9100
+      - REGISTRY_URL=registry:5000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker access
+      - ./lab-runtime/templates:/templates:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - platform-net
+      - lab-runtime-net
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  lab-grader:
+    build:
+      context: ./lab-runtime/grader
+      dockerfile: Dockerfile
+    container_name: infraforge-grader
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - GRADER_API_KEY=${GRADER_API_KEY}
+      - S3_ENDPOINT_URL=http://minio:9000
+      - S3_BUCKET=infraforge-artifacts
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./lab-runtime/templates:/templates:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - platform-net
+      - lab-runtime-net
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
+  lab-sweeper:
+    build:
+      context: ./lab-runtime/sweeper
+      dockerfile: Dockerfile
+    container_name: infraforge-sweeper
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://infraforge:${POSTGRES_PASSWORD}@postgres:5432/infraforge
+      - REDIS_URL=redis://redis:6379/0
+      - ORCHESTRATOR_URL=http://lab-orchestrator:9000
+      - ORCHESTRATOR_API_KEY=${ORCHESTRATOR_API_KEY}
+      - SWEEP_INTERVAL_SECONDS=60
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - platform-net
+      - lab-runtime-net
+    restart: unless-stopped
+
+  registry:
+    image: registry:2
+    container_name: infraforge-registry
+    volumes:
+      - registry-data:/var/lib/registry
+    networks:
+      - lab-runtime-net
+    restart: unless-stopped
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OBSERVABILITY PLANE
+# ─────────────────────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: infraforge-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+    volumes:
+      - ./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - platform-net
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: infraforge-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - platform-net
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    container_name: infraforge-loki
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./infra/monitoring/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    networks:
+      - platform-net
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: infraforge-promtail
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./infra/monitoring/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - platform-net
+    restart: unless-stopped

@@ -1,0 +1,51 @@
+# InfraForge Lab Template: terraform-broken-plan
+# Category: IaC | Difficulty: Intermediate
+# Execution: Container (Terraform + LocalStack)
+
+id: terraform-broken-plan
+title: "Terraform Broken Plan + State Reconciliation"
+category: iac
+difficulty: intermediate
+estimated_minutes: 30
+max_runtime_minutes: 90
+time_par_minutes: 30
+
+image: infraforge/lab-terraform-broken:v1
+
+weight_correctness: 0.60
+weight_safety: 0.25
+weight_efficiency: 0.15
+
+scenario: |
+  ## Situation
+
+  The infrastructure-as-code repository has a broken Terraform configuration.
+  A `terraform plan` fails. The state file is partially out of sync with the
+  "live" environment (LocalStack).
+
+  ## Your goal
+
+  1. Fix the Terraform configuration so `terraform plan` runs cleanly
+  2. `terraform apply` must succeed without destroying existing resources
+  3. The output values must be correct (VPC ID, subnet IDs)
+  4. State must be consistent after apply (no pending changes)
+
+  ## Environment
+
+  Terraform and AWS CLI are installed. The workspace is at `/home/user/infra/`.
+  LocalStack is running locally as the AWS backend.
+  The state file is at `/home/user/infra/terraform.tfstate`.
+
+  ## What's broken (find it)
+
+  - A variable is referenced but not declared
+  - A resource has an invalid argument for the provider version
+  - The state references a resource that no longer exists in LocalStack
+    (drift) — you must reconcile without destroying live resources
+
+  ## Rules
+
+  - Do not change the provider version
+  - Do not use `terraform state rm` to remove live resources
+  - After apply, `terraform plan` must show "No changes"
+  - No resources outside `/home/user/infra/` scope

@@ -1,0 +1,80 @@
+time_par_minutes: 35
+
+checks:
+  # ── CORRECTNESS ─────────────────────────────────────────────────────────────
+  - id: pods_running
+    type: shell
+    layer: correctness
+    weight: 0.20
+    description: "All payments pods are Running and Ready (1/1)"
+    command: "kubectl -n production get pods -l app=payments --no-headers | awk '{print $2}' | sort -u"
+    expect_stdout_contains: "1/1"
+    expect_stdout_not_contains: "0/1"
+
+  - id: pods_not_crashlooping
+    type: shell
+    layer: correctness
+    weight: 0.10
+    description: "No pods in CrashLoopBackOff"
+    command: "kubectl -n production get pods -l app=payments --no-headers | grep -c CrashLoop || echo 0"
+    expect_stdout_contains: "0"
+
+  - id: service_reachable
+    type: shell
+    layer: correctness
+    weight: 0.20
+    description: "payments-svc returns HTTP 200 on port 8080"
+    command: "SVC_IP=$(kubectl -n production get svc payments-svc -o jsonpath='{.spec.clusterIP}') && curl -sf http://$SVC_IP:8080/ && echo ok"
+    expect_stdout_contains: "ok"
+
+  - id: readiness_probe_passing
+    type: shell
+    layer: correctness
+    weight: 0.10
+    description: "Readiness probe condition is True for all pods"
+    command: "kubectl -n production get pods -l app=payments -o jsonpath='{.items[*].status.conditions[?(@.type==\"Ready\")].status}'"
+    expect_stdout_contains: "True"
+    expect_stdout_not_contains: "False"
+
+  # ── SAFETY ──────────────────────────────────────────────────────────────────
+  - id: image_unchanged
+    type: shell
+    layer: safety
+    weight: 0.10
+    description: "Container image not changed"
+    command: "kubectl -n production get deployment payments -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect_stdout_contains: "infraforge/sample-payments"
+
+  - id: namespace_isolated
+    type: shell
+    layer: safety
+    weight: 0.10
+    description: "No resources modified outside production namespace"
+    command: "kubectl get events --all-namespaces --field-selector reason=ScalingReplicaSet -o json | python3 -c \"import sys,json; events=json.load(sys.stdin)['items']; bad=[e for e in events if e['metadata']['namespace'] not in ('production','kube-system')]; print('UNSAFE' if bad else 'ok')\""
+    expect_stdout_not_contains: "UNSAFE"
+
+  - id: no_cluster_recreate
+    type: shell
+    layer: safety
+    weight: 0.05
+    description: "Cluster was not destroyed and recreated"
+    command: "kubectl get nodes -o jsonpath='{.items[0].metadata.creationTimestamp}'"
+    # Node creation timestamp should be before lab start time (checked by grader)
+    expect_exit_code: 0
+
+  # ── EFFICIENCY ──────────────────────────────────────────────────────────────
+  - id: rollout_stable
+    type: shell
+    layer: efficiency
+    weight: 0.10
+    description: "Deployment rollout is complete and stable"
+    command: "kubectl -n production rollout status deployment/payments --timeout=30s && echo ok"
+    expect_stdout_contains: "ok"
+
+  - id: minimal_edits
+    type: shell
+    layer: efficiency
+    weight: 0.05
+    description: "Deployment revision count is low (not spammed with patches)"
+    command: "[ $(kubectl -n production get deployment payments -o jsonpath='{.metadata.annotations.deployment\\.kubernetes\\.io/revision}') -le 5 ] && echo ok"
+    expect_stdout_contains: "ok"
